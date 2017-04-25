@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.allen.pushdemo2"
+    package="com.allen.pushdemo"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -19,6 +19,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
+        android:name="com.allen.pushdemo.MyApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -28,7 +29,6 @@
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -37,13 +37,20 @@
             android:name="cn.bmob.push.lib.service.PushService"
             android:exported="true"
             android:label="PushService"
-            android:process="cn.bmob.push" >
+            android:process=":push" >
             <intent-filter>
                 <action android:name="cn.bmob.push.lib.service.PushService" />
             </intent-filter>
         </service>
+        <!-- 用于进程保活 不注册也能收到消息 但是会有前台的通知 显示正在运行-->
+        <service
+            android:name="cn.bmob.push.lib.service.PushNotifyService"
+            android:process=":push" >
+        </service>
 
-        <receiver android:name="cn.bmob.push.PushReceiver" >
+        <receiver
+            android:name="cn.bmob.push.PushReceiver"
+            android:process=":push" >
             <intent-filter>
 
                 <!-- 系统启动完成后会调用 -->
@@ -54,9 +61,23 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.allen.pushdemo2.MyPushMessageReceiver" >
+        
+        <!-- 开发者自己定义 -->
+        <receiver android:name="com.allen.pushdemo.MyPushMessageReceiver" >
             <intent-filter>
                 <action android:name="cn.bmob.push.action.MESSAGE" />
+            </intent-filter>
+        </receiver>
+        <!-- 接收AlarmManager发出的广播 -->
+        <!-- 要和PushService运行在同个进程 -->
+        <receiver
+            android:name="cn.bmob.push.PushNotifyReceiver"
+            android:process=":push" >
+            <intent-filter>
+                <!-- 接收心跳广播的action -->
+                <action android:name="cn.bmob.push.action.HEARTBEAT" />
+                <!-- 接收唤醒广播的action -->
+                <action android:name="cn.bmob.push.action.NOTIFY" />
             </intent-filter>
         </receiver>
     </application>
